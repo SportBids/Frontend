@@ -1,30 +1,21 @@
-import { Component, OnInit } from '@angular/core';
-import { StorageService } from './_services/storage.service';
+import { Component } from '@angular/core';
+import { AccountService } from './_services/account.service';
+import { User } from './_models/user';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
-  isLoggedIn = false;
-  username?: string;
-  title = 'SportBidsWeb';
+export class AppComponent {
+    user?: User | null;
+    title = 'SportBidsWeb';
 
-  constructor(private storageService: StorageService) {}
-
-  ngOnInit(): void {
-    this.isLoggedIn = !!this.storageService.getToken();
-
-    if (this.isLoggedIn) {
-      const user = this.storageService.getUser();
-
-      this.username = user.username;
+    constructor(private accountService: AccountService) {
+        this.accountService.user.subscribe(x => this.user = x);
     }
-  }
 
-  logout() :void {
-    this.storageService.signOut();
-    window.location.reload();
-  }
+    logout(): void {
+        this.accountService.logout();
+    }
 }

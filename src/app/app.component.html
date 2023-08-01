@@ -5,24 +5,18 @@
       <li class="nav-item">
         <a href="/home" class="nav-link" routerLink="home">Home </a>
       </li>
-      <li class="nav-item">
-        <a href="/user" class="nav-link" *ngIf="isLoggedIn" routerLink="user">User</a>
-      </li>
     </ul>
 
-    <ul class="navbar-nav ml-auto" *ngIf="!isLoggedIn">
+    <ul class="navbar-nav ml-auto" *ngIf="user == null">
       <li class="nav-item">
         <a href="/signup" class="nav-link" routerLink="signup">Sign Up</a>
       </li>
       <li class="nav-item">
-        <a href="/signin" class="nav-link" routerLink="signin">Login</a>
+        <a href="/signin" class="nav-link" routerLink="signin">Sign In</a>
       </li>
     </ul>
 
-    <ul class="navbar-nav ml-auto" *ngIf="isLoggedIn">
-      <li class="nav-item">
-        <a href="/profile" class="nav-link" routerLink="profile">{{ username }}</a>
-      </li>
+    <ul class="navbar-nav ml-auto" *ngIf="user != null">
       <li class="nav-item">
         <a href class="nav-link" (click)="logout()">LogOut</a>
       </li>

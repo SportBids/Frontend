@@ -1,57 +1,59 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../_services/auth.service';
-import { StorageService } from '../_services/storage.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AccountService } from '../_services/account.service';
+import { first } from 'rxjs';
 
 @Component({
-  selector: 'app-sign-up',
-  templateUrl: './sign-up.component.html',
-  styleUrls: ['./sign-up.component.css']
+    selector: 'app-sign-up',
+    templateUrl: './sign-up.component.html',
+    styleUrls: ['./sign-up.component.css']
 })
 export class SignUpComponent implements OnInit {
-  form: any = {
-    username:null,
-    email:null,
-    password: null,
-    firstName:null,
-    lastName:null
-  };
-  isSuccessful = false;
-  isSignUpFailed = false;
-  errorMessage = '';
+    form!: FormGroup;
+    loading = false;
+    submitted = false;
 
-  constructor(
-    private authService: AuthService,
-    private storageService: StorageService,
-    private router : Router) { }
+    constructor(
+        private formBuilder: FormBuilder,
+        private route: ActivatedRoute,
+        private router: Router,
+        private accountService: AccountService
+    ) { }
 
-  ngOnInit(): void {
-  }
+    ngOnInit(): void {
+        this.form = this.formBuilder.group({
+            username: ['', Validators.required],
+            password: ['', [Validators.required, Validators.minLength(6)]],
+            email: ['', [Validators.required, Validators.email]],
+            firstName: [''],
+            lastName: [''],
+        });
+    }
 
-  onSubmit():void {
-    const {username, email, password, firstName, lastName} = this.form;
+    // convenience getter for easy access to form fields
+    get f() { return this.form.controls; }
 
-    this.authService
-      .signUp(username,password,email,firstName,lastName)
-      .subscribe(
-        data => {
-          console.log(data);
-          this.isSuccessful = true;
-          this.isSignUpFailed = false;
+    onSubmit() {
+        this.submitted = true;
 
-          this.storageService.saveToken(data.AccessToken)
-          this.storageService.saveUser(data);
-
-          this.goToHome();
-        },
-        err => {
-          this.errorMessage = err.error.message;
-          this.isSignUpFailed = true;
+        // stop here if form is invalid
+        if (this.form.invalid) {
+            return;
         }
-      );
-  }
 
-  goToHome(): void {
-    this.router.navigate([''],);
-  }
+        this.loading = true;
+        this.accountService.register(this.form.value)
+            .pipe(first())
+            .subscribe({
+                next: () => {
+                    // this.alertService.success('Registration successful', { keepAfterRouteChange: true });
+                    this.router.navigate([''], { relativeTo: this.route });
+                },
+                error: error => {
+                    // this.alertService.error(error);
+                    this.loading = false;
+                }
+            });
+    }
 }

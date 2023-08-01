@@ -1,49 +1,54 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../_services/auth.service';
-import { StorageService } from '../_services/storage.service';
+import { AccountService } from '../_services/account.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { first } from 'rxjs';
 
 @Component({
-  selector: 'app-sign-in',
-  templateUrl: './sign-in.component.html',
-  styleUrls: ['./sign-in.component.css']
+    selector: 'app-sign-in',
+    templateUrl: './sign-in.component.html',
+    styleUrls: ['./sign-in.component.css']
 })
 export class SignInComponent implements OnInit {
-  form: any = {
-    username: null,
-    password: null
-  };
-  isLoggedIn = false;
-  isLoginFailed = false;
-  errorMessage = '';
+    form!: FormGroup;
+    loading = false;
+    submitted = false;
 
-  constructor(private authService: AuthService, private storage: StorageService) { }
+    constructor(
+        private formBuilder: FormBuilder,
+        private route: ActivatedRoute,
+        private router: Router,
+        private accountService: AccountService
+    ) { }
 
-  ngOnInit(): void {
-    if (this.storage.getToken()) {
-      this.isLoggedIn = true;
+    ngOnInit(): void {
+        this.form = this.formBuilder.group({
+            username: ['', Validators.required],
+            password: ['', Validators.required]
+        })
     }
-  }
 
-  onSubmit(): void {
-    const { username, password } = this.form;
+    get f() { return this.form.controls; }
 
-    this.authService.signIn(username, password).subscribe(
-      data => {
-        this.storage.saveToken(data.AccessToken);
-        this.storage.saveUser(data);
+    onSubmit(): void {
+        this.submitted = true;
 
-        this.isLoggedIn = true;
-        this.isLoginFailed = false;
-        this.reloadPage();
-      },
-      err => {
-        this.errorMessage = err.error.message;
-        this.isLoginFailed = true;
-      }
-    )
-  }
+        if (this.form.invalid) {
+            return;
+        }
 
-  reloadPage(): void {
-    window.location.reload();
-  }
+        this.loading = true;
+        this.accountService.login(this.f['username'].value, this.f['password'].value)
+            .pipe(first())
+            .subscribe({
+                next: () => {
+                    // get return url from query parameters or default to home page
+                    const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+                    this.router.navigateByUrl(returnUrl);
+                },
+                error: error => {
+                    this.loading = false;
+                }
+            });
+    }
 }
