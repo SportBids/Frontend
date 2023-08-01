@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../_services/auth.service';
+import { StorageService } from '../_services/storage.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-sign-up',
@@ -18,7 +20,10 @@ export class SignUpComponent implements OnInit {
   isSignUpFailed = false;
   errorMessage = '';
 
-  constructor(private authService:AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private storageService: StorageService,
+    private router : Router) { }
 
   ngOnInit(): void {
   }
@@ -33,6 +38,11 @@ export class SignUpComponent implements OnInit {
           console.log(data);
           this.isSuccessful = true;
           this.isSignUpFailed = false;
+
+          this.storageService.saveToken(data.AccessToken)
+          this.storageService.saveUser(data);
+
+          this.goToHome();
         },
         err => {
           this.errorMessage = err.error.message;
@@ -41,4 +51,7 @@ export class SignUpComponent implements OnInit {
       );
   }
 
+  goToHome(): void {
+    this.router.navigate([''],);
+  }
 }
