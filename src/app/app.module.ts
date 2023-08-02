@@ -10,6 +10,7 @@ import { HomeComponent } from './home/home.component';
 import { SignInComponent } from './sign-in/sign-in.component';
 import { SignUpComponent } from './sign-up/sign-up.component';
 import { JwtInterceptor } from './_helpers/jwt.interceptor';
+import { ErrorInterceptor } from './_helpers/error.interceptor';
 
 @NgModule({
     declarations: [
@@ -25,7 +26,8 @@ import { JwtInterceptor } from './_helpers/jwt.interceptor';
         HttpClientModule
     ],
     providers: [
-        { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true }
+        { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+        { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
     ],
     bootstrap: [AppComponent]
 })
