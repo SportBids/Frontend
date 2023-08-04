@@ -3,6 +3,7 @@ import { AccountService } from '../_services/account.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { first } from 'rxjs';
+import { ValidationError } from '../_models/validation.error';
 
 @Component({
     selector: 'app-sign-in',
@@ -13,6 +14,8 @@ export class SignInComponent implements OnInit {
     form!: FormGroup;
     loading = false;
     submitted = false;
+    showError: boolean = false;
+    validationError!:ValidationError;
 
     constructor(
         private formBuilder: FormBuilder,
@@ -32,11 +35,11 @@ export class SignInComponent implements OnInit {
 
     onSubmit(): void {
         this.submitted = true;
-
         if (this.form.invalid) {
             return;
         }
 
+        this.showError = false;
         this.loading = true;
         this.accountService.login(this.f['username'].value, this.f['password'].value)
             .pipe(first())
@@ -48,6 +51,8 @@ export class SignInComponent implements OnInit {
                 },
                 error: error => {
                     this.loading = false;
+                    this.showError = true;
+                    this.validationError = error;
                 }
             });
     }

@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AccountService } from '../_services/account.service';
 import { first } from 'rxjs';
+import { ValidationError } from '../_models/validation.error';
 
 @Component({
     selector: 'app-sign-up',
@@ -13,6 +14,8 @@ export class SignUpComponent implements OnInit {
     form!: FormGroup;
     loading = false;
     submitted = false;
+    showError: boolean = false;
+    validationError!:ValidationError;
 
     constructor(
         private formBuilder: FormBuilder,
@@ -41,7 +44,7 @@ export class SignUpComponent implements OnInit {
         if (this.form.invalid) {
             return;
         }
-
+        this.showError = false
         this.loading = true;
         this.accountService.register(this.form.value)
             .pipe(first())
@@ -53,6 +56,8 @@ export class SignUpComponent implements OnInit {
                 error: error => {
                     // this.alertService.error(error);
                     this.loading = false;
+                    this.showError = true;
+                    this.validationError = error;
                 }
             });
     }
